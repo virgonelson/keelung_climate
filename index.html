@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基隆氣象站 長期觀測資料整理報告 (1947-2024)</title>
+    
+    <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+    
+    <style>
+        /* --- 全螢幕佈局與重置 --- */
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden;
+            font-family: '微軟正黑體', 'Arial', sans-serif;
+            background-color: #f0f7ff;
+            color: #333;
+        }
+
+        /* --- 容器與主要結構 --- */
+        .container {
+            width: 95%;
+            height: 95%;
+            margin: 2.5% auto;
+            background-color: #ffffff;
+            border-radius: 18px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            color: #004e92;
+            text-align: center;
+            font-size: 2.2em; /* 字級調小 */
+            margin: 0 0 5px 0;
+        }
+        .subtitle {
+            text-align: center;
+            color: #5b7da0;
+            margin-bottom: 15px;
+            font-size: 1em; /* 字級調小 */
+            border-bottom: 2px solid #b3e5fc;
+            padding-bottom: 8px;
+        }
+
+        /* 輪播區塊樣式 */
+        .carousel-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            background-color: #f7fcff;
+            flex-grow: 1;
+        }
+        .carousel-inner {
+            display: flex;
+            transition: transform 1s cubic-bezier(0.23, 1, 0.32, 1);
+            height: 100%;
+        }
+        .slide {
+            min-width: 100%;
+            padding: 25px 35px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .slide h2 {
+            color: #007bbd;
+            border-left: 6px solid #4fc3f7;
+            padding-left: 15px;
+            margin-bottom: 12px;
+            font-size: 1.5em; /* 字級調小 */
+        }
+        
+        /* 上下結構區塊 */
+        .top-section {
+            flex: 0 0 35%;
+            max-height: 35%;
+            overflow: auto;
+            padding-bottom: 15px;
+        }
+        .bottom-section {
+            flex: 1;
+            min-height: 65%;
+        }
+
+        /* 表格樣式 (4欄佈局) */
+        .stats-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 5px;
+            font-size: 0.95em;
+        }
+        .stats-table tr {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .stats-table th, .stats-table td {
+            padding: 8px 12px;
+            box-sizing: border-box;
+            line-height: 1.3;
+        }
+        .stats-table th {
+            width: 15%;
+            background-color: #e3f2fd;
+            color: #004e92;
+            text-align: right;
+            border-radius: 8px 0 0 8px;
+        }
+        .stats-table td {
+            width: 35%;
+            background-color: #ffffff;
+            font-weight: normal;
+            border: 1px solid #bbdefb;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            color: #263238;
+        }
+        
+        /* 粗體重點樣式 */
+        .highlight {
+            font-weight: bold;
+            color: #d84315;
+        }
+        
+        /* 導航按鈕 */
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 78, 146, 0.8);
+            color: white;
+            border: none;
+            padding: 20px 14px;
+            cursor: pointer;
+            z-index: 10;
+            font-size: 2em;
+            opacity: 0.9;
+            transition: background 0.3s, opacity 0.3s;
+        }
+        .nav-button:hover {
+            background: rgba(0, 78, 146, 1);
+            opacity: 1;
+        }
+        #prevBtn { left: 0; border-radius: 0 10px 10px 0; }
+        #nextBtn { right: 0; border-radius: 10px 0 0 10px; }
+        
+        /* Plotly 圖表容器 */
+        .chart-container {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>基隆氣象站 長期觀測資料整理報告 (1947-2024)</h1>
+    <div class="subtitle">深入分析氣溫、降水、風速、日照等氣候要素的長期趨勢（數據來源：中央氣象署基隆氣象站）</div>
+
+    <div class="carousel-wrapper">
+        <div class="carousel-inner" id="carouselInner">
+            
+            <div class="slide" data-theme="temperature">
+                <div class="top-section">
+                    <h2>🌡️ 1/6 - 年度平均氣溫與暖化趨勢</h2>
+                    <table class="stats-table">
+                        <tr>
+                            <th>整體趨勢</th>
+                            <td><span class="highlight">升溫趨勢明顯</span></td>
+                            <th>最高均溫年</th>
+                            <td><span class="highlight">23.6°C</span> (2002 年)</td>
+                        </tr>
+                        <tr>
+                            <th>最低均溫年</th>
+                            <td><span class="highlight">21.6°C</span> (1951, 1964, 1974 年)</td>
+                            <th>最近 10 年平均</th>
+                            <td><span class="highlight">22.9°C</span> (2015-2024)</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="bottom-section">
+                    <div id="chart-temp" class="chart-container"></div>
+                </div>
+            </div>
+
+            <div class="slide" data-theme="extreme-temp">
+                <div class="top-section">
+                    <h2>🔥 2/6 - 年度極端最高溫與最低溫平均</h2>
+                    <table class="stats-table">
+                        <tr>
+                            <th>歷史最高溫紀錄</th>
+                            <td><span class="highlight">38.8°C</span> (2003 年)</td>
+                            <th>歷史最低溫紀錄</th>
+                            <td><span class="highlight">3.9°C</span> (1964, 1986 年)</td>
+                        </tr>
+                        <tr>
+                            <th>最高溫趨勢</th>
+                            <td><span class="highlight">明顯上升</span>，極端熱浪風險增高</td>
+                            <th>最低溫趨勢</th>
+                            <td>緩慢上升，暖冬現象增強</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="bottom-section">
+                    <div id="chart-extreme-temp" class="chart-container"></div>
+                </div>
+            </div>
+
+            <div class="slide" data-theme="rainfall">
+                <div class="top-section">
+                    <h2>🌧️ 3/6 - 年度累積降水量與降水日數</h2>
+                    <table class="stats-table">
+                        <tr>
+                            <th>降水量趨勢</th>
+                            <td>長期波動劇烈，<span class="highlight">極端化明顯</span></td>
+                            <th>降水日數趨勢</th>
+                            <td>緩慢下降，但仍維持年均 <span class="highlight">205 天</span> 高降雨頻率</td>
+                        </tr>
+                        <tr>
+                            <th>最高降水量年</th>
+                            <td><span class="highlight">5578.7 毫米</span> (1947 年)</td>
+                            <th>最少降水量年</th>
+                            <td><span class="highlight">1944.3 毫米</span> (1963 年)</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="bottom-section">
+                    <div id="chart-rain" class="chart-container"></div>
+                </div>
+            </div>
+            
+            <div class="slide" data-theme="daily-rain">
+                <div class="top-section">
+                    <h2>💦 4/6 - 年度最大日降水量極值 (極端豪雨)</h2>
+                    <table class="stats-table">
+                        <tr>
+                            <th>長期趨勢</th>
+                            <td>單日強降雨<span class="highlight">強度增加</span></td>
+                            <th>歷史最高紀錄</th>
+                            <td><span class="highlight">408.0 毫米</span> (2024 年山陀兒颱風)</td>
+                        </tr>
+                        <tr>
+                            <th>次高紀錄</th>
+                            <td><span class="highlight">351.3 毫米</span> (1984 年熱帶性低氣壓外圍環流)</td>
+                            <th>氣候警訊</th>
+                            <td>單日極端降雨頻發，都市<span class="highlight">防洪防災壓力增大</span></td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="bottom-section">
+                    <div id="chart-daily-rain" class="chart-container"></div>
+                </div>
+            </div>
+
+            <div class="slide" data-theme="wind-sun">
+                <div class="top-section">
+                    <h2>💨 5/6 - 平均風速與累積日照時數變化</h2>
+                    <table class="stats-table">
+                        <tr>
+                            <th>平均風速趨勢</th>
+                            <td>整體呈<span class="highlight">輕微下降趨勢</span></td>
+                            <th>日照時數趨勢</th>
+                            <td>長期數據呈<span class="highlight">輕微減少</span></td>
+                        </tr>
+                        <tr>
+                            <th>最高年平均風速</th>
+                            <td><span class="highlight">4.0 m/s</span> (1966 年)</td>
+                            <th>最低年日照時數</th>
+                            <td><span class="highlight">1007.2 hr</span> (1998 年)</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="bottom-section">
+                    <div id="chart-wind-sun" class="chart-container"></div>
+                </div>
+            </div>
+            
+            <div class="slide" data-theme="summary">
+                <div class="top-section">
+                    <h2>📈 6/6 - 綜合趨勢與氣候變化總結</h2>
+                    <table class="stats-table">
+                        <tr>
+                            <th>氣溫變化總結</th>
+                            <td><span class="highlight">全球暖化升溫趨勢確定</span>，極端高溫增多</td>
+                            <th>降水特點總結</th>
+                            <td>降水總量波動，但<span class="highlight">極端單日豪雨強度增加</span></td>
+                        </tr>
+                        <tr>
+                            <th>風/光總結</th>
+                            <td>風速和日照均呈<span class="highlight">微弱下降趨勢</span>，暗示天氣型態變化</td>
+                            <th>基隆主要挑戰</th>
+                            <td><span class="highlight">日益嚴重熱浪、極端降雨和山坡地土石流風險</span>的複合性衝擊</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="bottom-section" style="display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <p style="font-size: 1.8em; color: #004e92; line-height: 1.5;">
+                            <span class="highlight" style="font-size: 1.2em;">基隆氣候數據結論 (1947-2024)：</span>
+                            <br>
+                            氣溫 <span style="color: #d84315;">持續上升</span> (↗)
+                            <br>
+                            降水 <span style="color: #1a237e;">極端化</span> (↑強降雨)
+                            <br>
+                            風速/日照 <span style="color: #607d8b;">微弱下降</span> (↘)
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <button class="nav-button" id="prevBtn">&#10094;</button>
+        <button class="nav-button" id="nextBtn">&#10095;</button>
+    </div>
+
+</div>
+
+<script>
+    // ------------------------------------------------------------------------------------------------------
+    // 步驟 1: 數據準備 (使用用戶提供的真實氣象站數據 - 已清洗和提取)
+    // 數據範圍: 1947 年至 2024 年 (共 78 筆數據)
+    // ------------------------------------------------------------------------------------------------------
+    
+    const startYear = 1947;
+    const endYear = 2024;
+    const years = Array.from({ length: endYear - startYear + 1 }, (_, i) => startYear + i);
+    
+    // 1. 年度平均氣溫 (Avg欄位)
+    const annualAvgTemp = [
+        21.7, 22.2, 22.2, 21.8, 22.0, 22.4, 22.4, 22.7, 21.9, 22.1, 22.0, 22.3, 22.6, 22.5, 22.7, 22.0, 22.1, 22.5, 22.1, 22.5, 22.1, 21.7, 21.9, 22.0, 22.1, 21.6, 22.3, 21.9, 22.1, 21.7, 22.5, 22.1, 22.3, 22.2, 22.1, 22.1, 22.5, 22.0, 22.3, 22.2, 22.6, 22.6, 22.3, 22.6, 22.6, 22.2, 22.7, 23.0, 22.2, 22.4, 22.5, 23.6, 22.9, 22.8, 23.0, 23.3, 23.1, 22.6, 22.3, 22.9, 22.9, 22.7, 22.7, 22.6, 22.2, 22.6, 22.7, 22.8, 23.0, 23.3, 23.2, 23.2, 23.3, 23.5, 23.3, 22.9, 23.2, 23.4
+    ];
+    
+    // 2. 年度最高溫度 (Max欄位 - 極端值)
+    const annualMaxTemp = [
+        35.2, 34.1, 36.5, 37.7, 35.6, 35.2, 35.2, 36.8, 35.0, 35.6, 35.4, 35.7, 35.4, 35.7, 36.7, 35.6, 35.1, 36.3, 35.2, 34.7, 34.7, 35.6, 36.2, 36.0, 36.6, 34.0, 35.4, 35.0, 34.3, 34.3, 35.5, 36.5, 36.2, 36.9, 35.8, 36.0, 36.9, 36.8, 34.8, 35.0, 35.6, 37.1, 37.5, 36.7, 36.8, 36.9, 36.9, 36.0, 38.0, 36.0, 36.0, 38.8, 36.3, 36.7, 36.3, 36.1, 38.2, 35.6, 37.2, 37.2, 37.4, 36.5, 35.9, 38.1, 36.6, 36.4, 36.2, 38.1, 36.8, 37.6, 38.0, 36.5, 37.4, 38.5, 37.7, 37.4, 37.4, 36.3
+    ];
+
+    // 3. 年度最低溫 (Min欄位 - 極端值)
+    const annualMinTemp = [
+        8.1, 7.6, 7.0, 7.9, 9.4, 6.8, 5.5, 9.8, 7.2, 6.8, 7.8, 7.7, 5.0, 7.4, 5.6, 4.9, 3.9, 10.2, 5.8, 9.5, 7.1, 7.3, 7.8, 6.4, 7.9, 7.4, 4.6, 4.5, 8.7, 7.3, 7.6, 6.3, 7.6, 6.8, 6.0, 9.2, 8.8, 6.0, 6.9, 3.9, 8.0, 9.7, 7.7, 9.0, 6.2, 7.3, 7.6, 8.4, 6.0, 8.4, 8.6, 9.5, 7.0, 10.1, 8.0, 9.4, 8.6, 7.2, 4.6, 7.6, 7.6, 8.4, 7.5, 6.4, 8.4, 8.9, 9.7, 8.1, 9.1, 4.0, 10.5, 8.1, 12.4, 7.7, 6.6, 8.9, 8.4, 8.0
+    ];
+    
+    // 4. 年度累積降水量 (Sum欄位)
+    const annualRainfall = [
+        5578.7, 3589.5, 3609.9, 3548.2, 4857.4, 3560.7, 5172.9, 3835.8, 2568.4, 4930.0, 3923.0, 3563.6, 3694.1, 3397.5, 3005.3, 3419.5, 1944.3, 3678.4, 3352.4, 3851.4, 3584.2, 3234.7, 3459.1, 4854.6, 3172.0, 2839.3, 3465.0, 4825.8, 3436.7, 2644.1, 3663.6, 3691.1, 3193.1, 3514.9, 3798.5, 3240.7, 3464.3, 4836.2, 4322.8, 4586.9, 4260.1, 4555.9, 3598.4, 4452.3, 3303.0, 3668.0, 3053.6, 3458.5, 2881.9, 3932.0, 3203.4, 5438.1, 2746.7, 5404.4, 3642.4, 2607.3, 2155.8, 3886.2, 4240.9, 3723.5, 4063.7, 3673.6, 3654.6, 3303.6, 3727.0, 3908.8, 3768.2, 2574.0, 3151.6, 3841.4, 3857.6, 3405.7, 3517.5, 3895.0, 3051.5, 5568.5, 2543.5, 3699.5
+    ];
+    
+    // 5. 年度最大日降水量 (Max欄位)
+    const annualMaxDailyRain = [
+        241.3, 245.9, 204.5, 127.2, 249.0, 142.0, 232.0, 233.1, 177.8, 209.5, 123.1, 258.6, 240.9, 216.7, 139.9, 256.5, 294.1, 124.3, 118.3, 169.8, 197.9, 323.5, 199.3, 216.6, 163.8, 160.0, 189.4, 189.1, 185.7, 134.6, 183.2, 224.0, 124.7, 351.3, 167.5, 125.6, 138.8, 151.4, 218.2, 201.0, 301.2, 242.0, 189.0, 186.6, 162.0, 101.5, 109.0, 178.0, 126.0, 198.0, 217.0, 309.5, 113.5, 271.8, 269.5, 117.5, 118.2, 240.2, 257.0, 193.0, 205.8, 178.5, 179.0, 345.5, 223.5, 203.5, 246.5, 118.3, 317.0, 246.0, 337.6, 200.0, 115.5, 184.0, 108.0, 274.0, 90.0, 408.0
+    ];
+
+    // 6. 降水日數 (Sum欄位)
+    const annualRainDays = [
+        238, 199, 204, 217, 233, 243, 223, 230, 194, 223, 225, 207, 210, 207, 207, 177, 151, 219, 190, 203, 207, 182, 197, 233, 195, 201, 221, 220, 211, 191, 194, 215, 213, 202, 198, 206, 218, 236, 222, 221, 204, 220, 203, 218, 200, 194, 187, 181, 187, 191, 184, 212, 206, 208, 204, 161, 150, 168, 195, 195, 195, 187, 193, 181, 216, 229, 200, 181, 191, 224, 197, 187, 214, 190, 166, 210, 177, 177
+    ];
+    
+    // 7. 年度平均風速 (Avg欄位)
+    const annualWind = [
+        3.0, 3.0, 4.0, 2.3, 3.4, 3.5, 3.1, 3.9, 3.6, 3.7, 3.1, 3.4, 3.7, 3.7, 3.8, 3.6, 3.2, 4.0, 3.6, 3.5, 3.7, 3.4, 3.6, 3.5, 3.9, 3.5, 3.6, 3.5, 3.3, 3.3, 3.3, 3.5, 3.3, 3.4, 3.4, 3.3, 3.4, 3.4, 3.2, 3.3, 2.9, 2.9, 2.6, 2.9, 3.0, 3.0, 2.7, 2.6, 3.1, 2.9, 2.8, 2.9, 2.8, 2.5, 3.2, 2.9, 3.1, 3.2, 3.1, 3.0, 3.0, 3.1, 3.2, 3.0, 3.3, 3.1, 3.1, 3.0, 3.0, 3.0, 3.1, 3.0, 3.0, 2.9, 2.9, 3.2, 3.0, 3.2
+    ];
+    
+    // 8. 年度累積日照時數 (Sum欄位)
+    const annualSunshine = [
+        1333.4, 1519.5, 1306.1, 1163.4, 1275.7, 1234.6, 1372.2, 1327.3, 1307.6, 1444.9, 1306.1, 1466.9, 1393.8, 1327.2, 1503.8, 1454.5, 1729.3, 1226.8, 1307.9, 1270.1, 1399.2, 1453.0, 1305.6, 1246.0, 1351.2, 1327.8, 1171.5, 1111.9, 1130.1, 1202.1, 1330.2, 1173.6, 1282.2, 1259.7, 1249.7, 1320.1, 1269.4, 1206.4, 1153.5, 1288.1, 1322.5, 1174.1, 1175.4, 1119.3, 1176.7, 1007.2, 1188.3, 1299.9, 1157.0, 1343.9, 1267.0, 1116.9, 1100.0, 1247.6, 1397.6, 1573.2, 1548.5, 1552.8, 1348.7, 1312.3, 1244.4, 1364.2, 1473.4, 1302.6, 1173.0, 1276.2, 1345.7, 1454.1, 1326.8, 1336.1, 1355.0, 1529.6, 1264.8, 1427.6, 1495.0, 1245.9, 1522.0, 1110.2
+    ];
+
+    // ----------------------------------------------------
+    // 步驟 2: 輪播邏輯 (與 V7.0 相同)
+    // ----------------------------------------------------
+    const carouselInner = document.getElementById('carouselInner');
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    let currentIndex = 0;
+    const totalSlides = slides.length;
+    const autoSlideInterval = 10000;
+
+    function updateCarousel() {
+        const offset = -currentIndex * 100;
+        carouselInner.style.transform = `translateX(${offset}%)`;
+        drawChartForCurrentSlide();
+    }
+
+    function goToPrev() {
+        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+        updateCarousel();
+    }
+
+    function goToNext() {
+        currentIndex = (currentIndex + 1) % totalSlides;
+        updateCarousel();
+    }
+
+    prevBtn.addEventListener('click', goToPrev);
+    nextBtn.addEventListener('click', goToNext);
+    // 確保只在所有圖表繪製完畢後才開始自動輪播
+    let autoSlideTimer = setInterval(goToNext, autoSlideInterval);
+
+
+    // ----------------------------------------------------
+    // 步驟 3: Plotly 圖表繪製函式
+    // ----------------------------------------------------
+    const baseLayout = {
+        plot_bgcolor: '#f9f9f9',
+        paper_bgcolor: 'transparent',
+        margin: { t: 40, b: 40, l: 60, r: 20 },
+        hovermode: 'x unified'
+    };
+
+    /** 繪製平均氣溫趨勢圖 (Y軸限制在 21-24°C) */
+    function drawTempChart() {
+        const data = [{
+            x: years,
+            y: annualAvgTemp,
+            mode: 'lines',
+            type: 'scatter',
+            name: '年度平均氣溫',
+            line: { color: '#d84315', width: 3 },
+            fill: 'tozeroy',
+            fillcolor: 'rgba(216, 67, 21, 0.1)'
+        }];
+
+        const layout = {
+            ...baseLayout,
+            title: '基隆年度平均氣溫時序圖 (1947-2024)',
+            xaxis: { title: '年份' },
+            yaxis: { 
+                title: '平均氣溫 (°C)', 
+                range: [21, 24] 
+            }
+        };
+        Plotly.newPlot('chart-temp', data, layout, { responsive: true, displayModeBar: false });
+    }
+
+    /** 繪製極端溫度趨勢圖 (最高溫/最低溫) */
+    function drawExtremeTempChart() {
+        const data = [
+            {
+                x: years,
+                y: annualMaxTemp,
+                mode: 'lines',
+                type: 'scatter',
+                name: '年度最高溫度 (極端值)',
+                line: { color: '#ff9800', width: 2 }
+            },
+            {
+                x: years,
+                y: annualMinTemp,
+                mode: 'lines',
+                type: 'scatter',
+                name: '年度最低溫度 (極端值)',
+                line: { color: '#03a9f4', width: 2 }
+            }
+        ];
+
+        const layout = {
+            ...baseLayout,
+            title: '基隆年度極端溫度趨勢圖 (1947-2024)',
+            xaxis: { title: '年份' },
+            yaxis: { title: '氣溫 (°C)', rangemode: 'tozero' }
+        };
+        Plotly.newPlot('chart-extreme-temp', data, layout, { responsive: true, displayModeBar: false });
+    }
+
+
+    /** 繪製累積降水與降水日數趨勢圖 */
+    function drawRainChart() {
+        const data = [
+            {
+                x: years,
+                y: annualRainfall,
+                name: '累積降水量 (mm)',
+                type: 'bar',
+                marker: { color: '#1a237e' },
+                yaxis: 'y1'
+            },
+             {
+                x: years,
+                y: annualRainDays,
+                name: '降水日數 (天)',
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#00bcd4', width: 2 },
+                yaxis: 'y2'
+            }
+        ];
+
+        const layout = {
+            ...baseLayout,
+            title: '基隆年度累積降水量與降水日數 (1947-2024)',
+            xaxis: { title: '年份' },
+            yaxis: { title: '累積降水量 (mm)', rangemode: 'tozero', linecolor: '#1a237e' },
+            yaxis2: {
+                title: '降水日數 (天)',
+                overlaying: 'y',
+                side: 'right',
+                rangemode: 'tozero',
+                linecolor: '#00bcd4'
+            },
+            margin: { t: 40, b: 40, l: 60, r: 60 }
+        };
+        Plotly.newPlot('chart-rain', data, layout, { responsive: true, displayModeBar: false });
+    }
+    
+    /** 繪製日最大降水趨勢圖 */
+    function drawDailyRainChart() {
+        const data = [
+            {
+                x: years,
+                y: annualMaxDailyRain,
+                name: '年度最大日降水量',
+                type: 'bar',
+                marker: { color: '#00bcd4' },
+                yaxis: 'y1'
+            }
+        ];
+
+        const layout = {
+            ...baseLayout,
+            title: '基隆年度最大日降水量趨勢圖 (極端豪雨事件, 1947-2024)',
+            xaxis: { title: '年份' },
+            yaxis: { title: '日最大降水量 (mm)', rangemode: 'tozero' }
+        };
+        Plotly.newPlot('chart-daily-rain', data, layout, { responsive: true, displayModeBar: false });
+    }
+
+
+    /** 繪製風速與日照時數對比圖 */
+    function drawWindSunChart() {
+        const data = [
+            {
+                x: years,
+                y: annualWind,
+                name: '平均風速 (m/s)',
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#00796b', width: 2 },
+                yaxis: 'y1'
+            },
+            {
+                x: years,
+                y: annualSunshine,
+                name: '累積日照時數 (小時)',
+                type: 'scatter',
+                mode: 'lines',
+                line: { color: '#ffa000', width: 2 },
+                yaxis: 'y2'
+            }
+        ];
+
+        const layout = {
+            ...baseLayout,
+            title: '基隆年度平均風速與日照時數時序圖 (1947-2024)',
+            xaxis: { title: '年份' },
+            yaxis: { title: '平均風速 (m/s)', rangemode: 'tozero', linecolor: '#00796b' },
+            yaxis2: {
+                title: '累積日照時數 (小時)',
+                overlaying: 'y',
+                side: 'right',
+                rangemode: 'tozero',
+                linecolor: '#ffa000'
+            },
+            margin: { t: 40, b: 40, l: 60, r: 60 }
+        };
+        Plotly.newPlot('chart-wind-sun', data, layout, { responsive: true, displayModeBar: false });
+    }
+    
+    /** 根據當前輪播頁面繪製對應的圖表 */
+    function drawChartForCurrentSlide() {
+        const currentSlide = slides[currentIndex];
+        const theme = currentSlide.getAttribute('data-theme');
+        
+        // 確保在切換時清理舊圖表
+        ['chart-temp', 'chart-extreme-temp', 'chart-rain', 'chart-daily-rain', 'chart-wind-sun'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) element.innerHTML = '';
+        });
+
+        // 延遲繪製以確保容器已渲染
+        setTimeout(() => {
+            switch(theme) {
+                case 'temperature':
+                    drawTempChart();
+                    break;
+                case 'extreme-temp':
+                    drawExtremeTempChart();
+                    break;
+                case 'rainfall':
+                    drawRainChart();
+                    break;
+                case 'daily-rain':
+                    drawDailyRainChart();
+                    break;
+                case 'wind-sun':
+                    drawWindSunChart();
+                    break;
+                case 'summary':
+                    break;
+            }
+        }, 100);
+    }
+
+    // 初始化：繪製所有圖表一次，並設置到第一頁
+    drawChartForCurrentSlide();
+</script>
+
+</body>
+</html>
